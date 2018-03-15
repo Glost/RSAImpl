@@ -7,40 +7,121 @@
 #ifndef RSAIMPL_LONG_ARITHM_H
 #define RSAIMPL_LONG_ARITHM_H
 
+#include <cstring>
 #include <vector>
 #include <algorithm>
 
 namespace RSAImpl {
 
-    using Byte = unsigned char;
+    typedef unsigned char Byte;
 
     class LongInt {
 
     public:
 
-        LongInt(const Byte* data, const int size) : _data(data), _size(size) { }
+        LongInt(unsigned long long uLongLong, bool needTrim = true);
+
+        LongInt(const LongInt& other, bool needTrim = true);
+
+        ~LongInt();
+
+    protected:
+
+        LongInt(Byte* data, int size, bool needTrim = true);
 
     public:
 
         LongInt add(const LongInt& other) const;
 
+        LongInt subtract(const LongInt& other) const;
+
+        LongInt multiply(const LongInt& other) const { return multiplyKaratsuba(*this, other); }
+
+        LongInt divideBy(const LongInt& other) const;
+
+        LongInt divideBy(const LongInt& other, LongInt& remainder) const;
+
+        LongInt mod(const LongInt& other) const;
+
+        LongInt shiftLeft(int bytes) const;
+
+        LongInt sqr() const { return multiply(*this); }
+
+        LongInt pow(const LongInt& pow) const;
+
+        LongInt pow(const LongInt& pow, const LongInt& onMod) const;
+
+        int compareTo(const LongInt& other) const;
+
+        LongInt setSize(int size) const;
+
+        LongInt getSubLongInt(int begin, int n) const;
+
+        unsigned long long toULongLong() const;
+
     public:
 
         static LongInt add(const LongInt& a, const LongInt& b) { return a.add(b); }
 
-    public:
+        static LongInt multiply(const LongInt& a, const LongInt& b) { return a.multiply(b); }
 
-        static LongInt operator+(const LongInt& a, const LongInt& b) { return a.add(b); }
+        static LongInt divide(const LongInt& a, const LongInt& b) { return a.divideBy(b); }
 
-        LongInt operator+=(const LongInt& other) { return add(other); }
+        static LongInt divide(const LongInt& a, const LongInt& b, LongInt& mod) { return a.divideBy(b, mod); }
+
+        static LongInt mod(const LongInt& a, const LongInt& b) { return a.mod(b); }
+
+        static LongInt zero() { return LongInt(0); }
+
+        static LongInt one() { return LongInt(1); }
+
+        static LongInt two() { return LongInt(2); }
+
+        static LongInt ten() { return LongInt(10); }
+
+    protected:
+
+        static LongInt multiplyKaratsuba(const LongInt& a, const LongInt& b);
+
+        static const Byte* trim(const Byte* data, int& size);
+
+        static inline void copyBytes(Byte* dst, Byte* src, int size) { memcpy(dst, src, size); }
+
+        static inline void setToZero(Byte* data, int size) { memset(data, 0, size); }
+
+        void operator=(const LongInt& other);
 
     private:
 
         const Byte* _data = nullptr;
 
-        const int _size;
+        int _size;
+
+        bool _isTrimmed = false;
 
     };
+
+    LongInt operator+(const LongInt& a, const LongInt& b) { return a.add(b); }
+
+    LongInt operator-(const LongInt& a, const LongInt& b) { return a.subtract(b); }
+
+    LongInt operator*(const LongInt& a, const LongInt& b) { return a.multiply(b); }
+
+    LongInt operator/(const LongInt& a, const LongInt& b) { return a.divideBy(b); }
+
+    LongInt operator%(const LongInt& a, const LongInt& b) { return a.mod(b); }
+
+    LongInt operator<<(const LongInt& longInt, int bytes) { return longInt.shiftLeft(bytes); }
+
+    bool operator>(const LongInt& a, const LongInt& b) { return a.compareTo(b) > 0; }
+
+    bool operator>=(const LongInt& a, const LongInt& b) { return a.compareTo(b) >= 0; }
+
+    bool operator<(const LongInt& a, const LongInt& b) { return a.compareTo(b) < 0; }
+
+    bool operator<=(const LongInt& a, const LongInt& b) { return a.compareTo(b) <= 0; }
+
+    bool operator==(const LongInt& a, const LongInt& b) { return a.compareTo(b) == 0; }
 
 }
 
