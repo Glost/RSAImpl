@@ -8,12 +8,15 @@
 #define RSAIMPL_LONG_ARITHM_H
 
 #include <cstring>
-#include <vector>
+#include <string>
+#include <stdexcept>
 #include <algorithm>
 
 namespace RSAImpl {
 
     typedef unsigned char Byte;
+
+    static const int TEST_FOR_PRIME_ATTEMPTS_COUNT = 30;
 
     class LongInt {
 
@@ -51,7 +54,11 @@ namespace RSAImpl {
 
         LongInt pow(const LongInt& pow, const LongInt& onMod) const;
 
+        LongInt inv(const LongInt& onMod) const;
+
         int compareTo(const LongInt& other) const;
+
+        bool isProbablyPrime(int attemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT) const;
 
         LongInt setSize(int size) const;
 
@@ -70,6 +77,8 @@ namespace RSAImpl {
         static LongInt divide(const LongInt& a, const LongInt& b, LongInt& mod) { return a.divideBy(b, mod); }
 
         static LongInt mod(const LongInt& a, const LongInt& b) { return a.mod(b); }
+
+        static LongInt gcd(const LongInt& a, const LongInt& b, LongInt& s, LongInt& t);
 
         static LongInt zero() { return LongInt(0); }
 
@@ -122,6 +131,8 @@ namespace RSAImpl {
     bool operator<=(const LongInt& a, const LongInt& b) { return a.compareTo(b) <= 0; }
 
     bool operator==(const LongInt& a, const LongInt& b) { return a.compareTo(b) == 0; }
+
+    bool operator!=(const LongInt& a, const LongInt& b) { return a.compareTo(b) != 0; }
 
 }
 

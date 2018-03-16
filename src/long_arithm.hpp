@@ -4,8 +4,6 @@
  * Long arithmetic
  */
 
-#include <stdexcept>
-
 #include "long_arithm.h"
 
 namespace RSAImpl {
@@ -268,6 +266,19 @@ namespace RSAImpl {
         return result;
     }
 
+    LongInt LongInt::inv(const LongInt& onMod) const
+    {
+        LongInt s(0);
+        LongInt t(0);
+
+        LongInt gcdRes = gcd(*this, onMod, s, t);
+
+        if (gcdRes != one())
+            return zero();
+
+        return s;
+    }
+
     int LongInt::compareTo(const LongInt& other) const
     {
         if (_isTrimmed && other._isTrimmed)
@@ -296,6 +307,32 @@ namespace RSAImpl {
         }
 
         return 0;
+    }
+
+    bool LongInt::isProbablyPrime(int attemptsCount) const
+    {
+        if (attemptsCount < 0)
+            throw std::invalid_argument("attemptsCount should be non-negative");
+
+        LongInt powValue = *this - one();
+        LongInt zeroValue = zero();
+        LongInt oneValue = one();
+
+        int i = 0;
+        for (int a = 2; i < attemptsCount; ++a)
+        {
+            LongInt aValue(a);
+
+            if (aValue.mod(*this) == zeroValue)
+                continue;
+
+            if (aValue.pow(powValue, *this) != oneValue)
+                return false;
+
+            ++i;
+        }
+
+        return true;
     }
 
     LongInt LongInt::setSize(int size) const
@@ -334,6 +371,27 @@ namespace RSAImpl {
             uLongLong = (_data[i] << (_size - i)) + uLongLong;
 
         return uLongLong;
+    }
+
+    LongInt LongInt::gcd(const LongInt& a, const LongInt& b, LongInt& s, LongInt& t)
+    {
+        if (a == zero())
+        {
+            s = zero();
+            t = one();
+
+            return b;
+        }
+
+        LongInt sPrev(0);
+        LongInt tPrev(0);
+
+        LongInt gcdRes = gcd(b % a, a, sPrev, tPrev);
+
+        s = tPrev - (b / a) * sPrev;
+        t = sPrev;
+
+        return gcdRes;
     }
 
     LongInt LongInt::multiplyKaratsuba(const LongInt& a, const LongInt& b)
