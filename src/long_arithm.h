@@ -44,7 +44,7 @@ namespace RSAImpl {
 
         LongInt signedSubtract(const LongInt& other) const;
 
-        LongInt multiply(const LongInt& other) const { return multiplyKaratsuba(*this, other); }
+        LongInt multiply(const LongInt& other) const;
 
         LongInt divideBy(const LongInt& other) const;
 
@@ -79,6 +79,8 @@ namespace RSAImpl {
         LongInt getSubLongInt(int begin, int n) const;
 
         long long toLongLong() const;
+
+        char toChar() const;
 
     public:
 

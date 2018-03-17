@@ -194,6 +194,23 @@ namespace RSAImpl {
         return res.isNegative() && res == zero() ? res.minus() : res;
     }
 
+    LongInt LongInt::multiply(const LongInt& other) const
+    {
+        LongInt zeroValue = zero();
+        LongInt oneValue = one();
+
+        if (*this == zeroValue || other == zeroValue)
+            return zero();
+
+        if (*this == oneValue)
+            return isNegative() ? other.minus() : LongInt(other);
+
+        if (other == oneValue)
+            return other.isNegative() ? minus() : LongInt(*this);
+
+        return multiplyKaratsuba(*this, other);
+    }
+
     LongInt LongInt::divideBy(const LongInt& other) const
     {
         Byte* data = new Byte[2];
@@ -381,9 +398,13 @@ namespace RSAImpl {
         if (attemptsCount < 0)
             throw std::invalid_argument("attemptsCount should be non-negative");
 
-        LongInt powValue = *this - one();
         LongInt zeroValue = zero();
         LongInt oneValue = one();
+
+        if (*this == oneValue)
+            return false;
+
+        LongInt powValue = *this - one();
 
         int i = 0;
         for (int a = 2; i < attemptsCount; ++a)
@@ -432,15 +453,28 @@ namespace RSAImpl {
 
     long long LongInt::toLongLong() const
     {
-        long long longLong = 0;
+        long long longLongValue = 0;
 
         for (int i = _size; i > 0; --i)
-            longLong = (_data[i] << (_size - i)) + longLong;
+            longLongValue = (_data[i] << (_size - i)) + longLongValue;
 
         if (_data[0] == 1)
-            longLong *= -1;
+            longLongValue *= -1;
 
-        return longLong;
+        return longLongValue;
+    }
+
+    char LongInt::toChar() const
+    {
+        char charValue = 0;
+
+        for (int i = _size; i > 0; --i)
+            charValue = (_data[i] << (_size - i)) + charValue;
+
+        if (_data[0] == 1)
+            charValue *= -1;
+
+        return charValue;
     }
 
     void LongInt::operator=(const LongInt& other)
@@ -488,14 +522,14 @@ namespace RSAImpl {
     {
         int size = a._size + b._size;
 
-        if (size < 8 * sizeof(long long))
+        if (size < 8 * sizeof(char) - 1)
         {
-            long long longLongA = a.toLongLong();
-            long long longLongB = b.toLongLong();
+            char charA = a.toChar();
+            char charB = b.toChar();
 
-            long long longLongProd = longLongA * longLongB;
+            char charProd = charA * charB;
 
-            return LongInt(longLongProd);
+            return LongInt(charProd);
         }
 
         int n = std::max(a._size, b._size);
@@ -505,22 +539,20 @@ namespace RSAImpl {
         int m = n / 2;
         int mCeil = n % 2 == 0 ? m : m + 1;
 
-        bool needExchange = a < b;
-
-        LongInt a0 = needExchange ? normB.getSubLongInt(1, mCeil) : normA.getSubLongInt(1, m);
-        LongInt b0 = needExchange ? normA.getSubLongInt(1, mCeil) : normB.getSubLongInt(1, m);
-        LongInt a1 = needExchange ? normB.getSubLongInt(mCeil + 1, m) : normA.getSubLongInt(m + 1, mCeil);
-        LongInt b1 = needExchange ? normA.getSubLongInt(mCeil + 1, m) : normB.getSubLongInt(m + 1, mCeil);
-
-        LongInt diff0 = a0 - b0;
-        LongInt diff1 = a1 - b1;
+        LongInt a1 = normA.getSubLongInt(1, mCeil);
+        LongInt b1 = normB.getSubLongInt(1, mCeil);
+        LongInt a0 = normA.getSubLongInt(mCeil + 1, m);
+        LongInt b0 = normB.getSubLongInt(mCeil + 1, m);
 
         LongInt prod00 = multiplyKaratsuba(a0, b0);
-        LongInt prod01 = multiplyKaratsuba(a0, b1);
-        LongInt prod10 = multiplyKaratsuba(a1, b0);
         LongInt prod11 = multiplyKaratsuba(a1, b1);
 
-        LongInt prod = prod00 - ((prod01 + prod10) << m) + (prod11 << n);
+        LongInt sumA = a0 + a1;
+        LongInt sumB = b0 + b1;
+
+        LongInt sumProd = multiplyKaratsuba(sumA, sumB);
+
+        LongInt prod = prod00 + ((sumProd - prod00 - prod11) << m) + (prod11 << (2 * m));
         return prod;
     }
 
