@@ -8,34 +8,6 @@
 
 namespace RSAImpl {
 
-    LongInt::LongInt(Byte* data, int size, bool needTrim) : _size(size)
-    {
-        if (size > 1 && data[1] == 0)
-        {
-            if (needTrim)
-            {
-                _isTrimmed = true;
-
-                int trimmedSize = size;
-                const Byte* trimmedData = trim(data, trimmedSize);
-
-                if (trimmedData != data)
-                    delete[] data;
-
-                _data = trimmedData;
-                _size = trimmedSize;
-
-                return;
-            }
-
-            _isTrimmed = false;
-        }
-        else
-            _isTrimmed = true;
-
-        _data = data;
-    }
-
     LongInt::LongInt(long long longLong, bool needTrim)
     {
         int size = 8 * sizeof(long long);
@@ -93,6 +65,62 @@ namespace RSAImpl {
             _data = trimmedData;
             _isTrimmed = true;
         }
+    }
+
+    LongInt::LongInt(const Byte* data, int size, bool needTrim)
+    {
+        if (size > 1 && data[1] == 0)
+        {
+            if (needTrim)
+            {
+                _isTrimmed = true;
+
+                int trimmedSize = size;
+                const Byte* trimmedData = trim(data, trimmedSize);
+
+                _data = trimmedData;
+                _size = trimmedSize;
+
+                return;
+            }
+
+            _isTrimmed = false;
+        }
+        else
+            _isTrimmed = true;
+
+        _data = new Byte[size + 1];
+        copyBytes((Byte*) _data, (Byte*) data, size + 1);
+        _size = size;
+    }
+
+    LongInt::LongInt(Byte* data, int size, bool needTrim)
+    {
+        if (size > 1 && data[1] == 0)
+        {
+            if (needTrim)
+            {
+                _isTrimmed = true;
+
+                int trimmedSize = size;
+                const Byte* trimmedData = trim(data, trimmedSize);
+
+                if (trimmedData != data)
+                    delete[] data;
+
+                _data = trimmedData;
+                _size = trimmedSize;
+
+                return;
+            }
+
+            _isTrimmed = false;
+        }
+        else
+            _isTrimmed = true;
+
+        _data = data;
+        _size = size;
     }
 
     LongInt::~LongInt()
@@ -415,6 +443,18 @@ namespace RSAImpl {
         return longLong;
     }
 
+    void LongInt::operator=(const LongInt& other)
+    {
+        if (_data != nullptr)
+            delete[] _data;
+
+        _data = new Byte[other._size + 1];
+        copyBytes((Byte*) _data, (Byte*) other._data, other._size + 1);
+
+        _size = other._size;
+        _isTrimmed = other._isTrimmed;
+    }
+
     LongInt LongInt::gcd(const LongInt& a, const LongInt& b)
     {
         LongInt s(0);
@@ -507,18 +547,6 @@ namespace RSAImpl {
         }
 
         return data;
-    }
-
-    void LongInt::operator=(const LongInt& other)
-    {
-        if (_data != nullptr)
-            delete[] _data;
-
-        _data = new Byte[other._size + 1];
-        copyBytes((Byte*) _data, (Byte*) other._data, other._size + 1);
-
-        _size = other._size;
-        _isTrimmed = other._isTrimmed;
     }
 
 };

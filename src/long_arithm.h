@@ -26,11 +26,15 @@ namespace RSAImpl {
 
         LongInt(const LongInt& other, bool needTrim = true);
 
-        ~LongInt();
+        LongInt(const Byte* data, int size, bool needTrim = true);
 
     protected:
 
         LongInt(Byte* data, int size, bool needTrim = true);
+
+    public:
+
+        ~LongInt();
 
     public:
 
@@ -78,6 +82,10 @@ namespace RSAImpl {
 
     public:
 
+        void operator=(const LongInt& other);
+
+    public:
+
         static LongInt add(const LongInt& a, const LongInt& b) { return a.add(b); }
 
         static LongInt subtract(const LongInt& a, const LongInt& b) { return a.subtract(b); }
@@ -113,8 +121,6 @@ namespace RSAImpl {
         static inline void copyBytes(Byte* dst, Byte* src, int size) { memcpy(dst, src, size); }
 
         static inline void setToZero(Byte* data, int size) { memset(data, 0, size); }
-
-        void operator=(const LongInt& other);
 
     private:
 

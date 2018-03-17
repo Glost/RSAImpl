@@ -7,5 +7,8 @@ set(SOURCE_FILES
         src/main.cpp
         src/long_arithm.h
         src/long_arithm.hpp
+        src/random.h
+        src/random.hpp
 )
+
 add_executable(RSAImpl ${SOURCE_FILES})
