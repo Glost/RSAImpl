@@ -21,6 +21,14 @@ namespace RSAImpl {
                 int testForPrimeAttemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT)
                 : _size(size), _seed(seed), _testForPrimeAttemptsCount(testForPrimeAttemptsCount) { init(); }
 
+        Byte* encrypt(const Byte* message) const;
+
+        Byte* decrypt(const Byte* message) const;
+
+        LongInt encrypt(LongInt message) const;
+
+        LongInt decrypt(LongInt message) const;
+
     private:
 
         void init();

@@ -208,7 +208,9 @@ namespace RSAImpl {
         if (other == oneValue)
             return other.isNegative() ? minus() : LongInt(*this);
 
-        return multiplyKaratsuba(*this, other);
+        LongInt resKaratsuba = multiplyKaratsuba(*this, other);
+        return resKaratsuba.isNonNegative() && (isNegative() != other.isNegative())
+               ? resKaratsuba.minus() : resKaratsuba;
     }
 
     LongInt LongInt::divideBy(const LongInt& other) const
@@ -349,7 +351,7 @@ namespace RSAImpl {
         if (gcdRes != one())
             return zero();
 
-        return s;
+        return s.isNegative() ? onMod - s.minus() : s;
     }
 
     int LongInt::compareTo(const LongInt& other) const
@@ -446,7 +448,7 @@ namespace RSAImpl {
         Byte* data = new Byte[size + 1];
 
         copyBytes(&data[1], (Byte*)&_data[begin], size);
-        data[0] = _data[0];
+        data[0] = 0;
 
         return LongInt(data, size, false);
     }

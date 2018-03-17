@@ -29,6 +29,8 @@ namespace RSAImpl {
 
         LongInt nextPrimeLongInt(int size = DEFAULT_LONG_INT_SIZE);
 
+        LongInt nextRelativelyPrimeLongInt(const LongInt& other, int size = DEFAULT_LONG_INT_SIZE);
+
     private:
 
         int _last = 0;

@@ -35,10 +35,22 @@ namespace RSAImpl {
         LongInt next(0);
 
         do
-        {
             next = nextLongInt(size);
-        }
         while (!next.isProbablyPrime());
+
+        return next;
+    }
+
+    LongInt Random::nextRelativelyPrimeLongInt(const LongInt& other, int size)
+    {
+        LongInt zeroValue = LongInt::zero();
+        LongInt oneValue = LongInt::one();
+
+        LongInt next(0);
+
+        do
+            next = nextPrimeLongInt(size) % other;
+        while (next == zeroValue || LongInt::gcd(next, other) != oneValue);
 
         return next;
     }
