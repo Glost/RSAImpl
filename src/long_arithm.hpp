@@ -36,18 +36,20 @@ namespace RSAImpl {
         _data = data;
     }
 
-    LongInt::LongInt(unsigned long long uLongLong, bool needTrim)
+    LongInt::LongInt(long long longLong, bool needTrim)
     {
-        int size = 8 * sizeof(unsigned long long);
+        int size = 8 * sizeof(long long);
         Byte* data = new Byte[size + 1];
+
+        data[0] = longLong < 0 ? 1 : 0;
+        if (longLong < 0)
+            longLong *= -1;
 
         for (int i = size; i > 0; --i)
         {
-            data[i] = uLongLong % 2;
-            uLongLong /= 2;
+            data[i] = longLong % 2;
+            longLong /= 2;
         }
-
-        data[0] = 0;
 
         if (data[1] == 0)
         {
@@ -104,7 +106,7 @@ namespace RSAImpl {
 
     LongInt LongInt::add(const LongInt& other) const
     {
-        int size = std::max(_size, other._size);
+        int size = std::max(_size, other._size) + 1;
         Byte* data = new Byte[size + 1];
 
         LongInt thisNorm = setSize(size);
@@ -119,7 +121,7 @@ namespace RSAImpl {
             data[i] %= 2;
         }
 
-        data[0] = isShifted ? 1 : 0;
+        data[0] = 0;
 
         return LongInt(data, size);
     }
@@ -142,9 +144,26 @@ namespace RSAImpl {
             data[i] %= 2;
         }
 
-        data[0] = isShifted ? 1 : 0;
+        data[0] = 0;
 
         return LongInt(data, size);
+    }
+
+    LongInt LongInt::signedSubtract(const LongInt& other) const
+    {
+        LongInt res(0);
+
+        if (isNegative() && other.isNegative())
+            res = signedCompareTo(other) < 0 ? minus().subtract(other.minus()).minus()
+                    : other.minus().subtract(minus());
+        else if (isNegative() && other.isNonNegative())
+            res = minus().add(other).minus();
+        else if (isNonNegative() && other.isNegative())
+            res = add(other.minus());
+        else
+            res = signedCompareTo(other) < 0 ? other.subtract(*this).minus() : subtract(other);
+
+        return res.isNegative() && res == zero() ? res.minus() : res;
     }
 
     LongInt LongInt::divideBy(const LongInt& other) const
@@ -196,6 +215,15 @@ namespace RSAImpl {
 
         divideBy(other, remainder);
         return remainder;
+    }
+
+    LongInt LongInt::minus() const
+    {
+        Byte* data = new Byte[_size + 1];
+        copyBytes(data, (Byte*) _data, _size + 1);
+        data[0] = 1 - data[0];
+
+        return LongInt(data, _size);
     }
 
     LongInt LongInt::shiftLeft(int bytes) const
@@ -309,6 +337,17 @@ namespace RSAImpl {
         return 0;
     }
 
+    int LongInt::signedCompareTo(const LongInt& other) const
+    {
+        if (_data[0] == 0 && other._data[0] == 1)
+            return 1;
+
+        if (_data[0] == 1 && other._data[0] == 0)
+            return -1;
+
+        return (1 - 2 * _data[0]) * compareTo(other);
+    }
+
     bool LongInt::isProbablyPrime(int attemptsCount) const
     {
         if (attemptsCount < 0)
@@ -358,19 +397,30 @@ namespace RSAImpl {
         Byte* data = new Byte[size + 1];
 
         copyBytes(&data[1], (Byte*)&_data[begin], size);
-        data[0] = 0;
+        data[0] = _data[0];
 
         return LongInt(data, size, false);
     }
 
-    unsigned long long LongInt::toULongLong() const
+    long long LongInt::toLongLong() const
     {
-        unsigned long long uLongLong = 0;
+        long long longLong = 0;
 
         for (int i = _size; i > 0; --i)
-            uLongLong = (_data[i] << (_size - i)) + uLongLong;
+            longLong = (_data[i] << (_size - i)) + longLong;
 
-        return uLongLong;
+        if (_data[0] == 1)
+            longLong *= -1;
+
+        return longLong;
+    }
+
+    LongInt LongInt::gcd(const LongInt& a, const LongInt& b)
+    {
+        LongInt s(0);
+        LongInt t(0);
+
+        return gcd(a, b, s, t);
     }
 
     LongInt LongInt::gcd(const LongInt& a, const LongInt& b, LongInt& s, LongInt& t)
@@ -388,7 +438,7 @@ namespace RSAImpl {
 
         LongInt gcdRes = gcd(b % a, a, sPrev, tPrev);
 
-        s = tPrev - (b / a) * sPrev;
+        s = tPrev.signedSubtract((b / a) * sPrev);
         t = sPrev;
 
         return gcdRes;
@@ -398,14 +448,14 @@ namespace RSAImpl {
     {
         int size = a._size + b._size;
 
-        if (size < 8 * sizeof(unsigned long long))
+        if (size < 8 * sizeof(long long))
         {
-            unsigned long long uLongA = a.toULongLong();
-            unsigned long long uLongB = b.toULongLong();
+            long long longLongA = a.toLongLong();
+            long long longLongB = b.toLongLong();
 
-            unsigned long long uLongProd = uLongA * uLongB;
+            long long longLongProd = longLongA * longLongB;
 
-            return LongInt(uLongProd);
+            return LongInt(longLongProd);
         }
 
         int n = std::max(a._size, b._size);

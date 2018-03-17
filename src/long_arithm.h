@@ -22,7 +22,7 @@ namespace RSAImpl {
 
     public:
 
-        LongInt(unsigned long long uLongLong, bool needTrim = true);
+        LongInt(long long longLong, bool needTrim = true);
 
         LongInt(const LongInt& other, bool needTrim = true);
 
@@ -38,6 +38,8 @@ namespace RSAImpl {
 
         LongInt subtract(const LongInt& other) const;
 
+        LongInt signedSubtract(const LongInt& other) const;
+
         LongInt multiply(const LongInt& other) const { return multiplyKaratsuba(*this, other); }
 
         LongInt divideBy(const LongInt& other) const;
@@ -45,6 +47,12 @@ namespace RSAImpl {
         LongInt divideBy(const LongInt& other, LongInt& remainder) const;
 
         LongInt mod(const LongInt& other) const;
+
+        LongInt minus() const;
+
+        bool isNonNegative() const { return _data[0] == 0; }
+
+        bool isNegative() const { return _data[0] == 1; }
 
         LongInt shiftLeft(int bytes) const;
 
@@ -58,17 +66,23 @@ namespace RSAImpl {
 
         int compareTo(const LongInt& other) const;
 
+        int signedCompareTo(const LongInt& other) const;
+
         bool isProbablyPrime(int attemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT) const;
 
         LongInt setSize(int size) const;
 
         LongInt getSubLongInt(int begin, int n) const;
 
-        unsigned long long toULongLong() const;
+        long long toLongLong() const;
 
     public:
 
         static LongInt add(const LongInt& a, const LongInt& b) { return a.add(b); }
+
+        static LongInt subtract(const LongInt& a, const LongInt& b) { return a.subtract(b); }
+
+        static LongInt signedSubtract(const LongInt& a, const LongInt& b) { return a.signedSubtract(b); }
 
         static LongInt multiply(const LongInt& a, const LongInt& b) { return a.multiply(b); }
 
@@ -77,6 +91,8 @@ namespace RSAImpl {
         static LongInt divide(const LongInt& a, const LongInt& b, LongInt& mod) { return a.divideBy(b, mod); }
 
         static LongInt mod(const LongInt& a, const LongInt& b) { return a.mod(b); }
+
+        static LongInt gcd(const LongInt& a, const LongInt& b);
 
         static LongInt gcd(const LongInt& a, const LongInt& b, LongInt& s, LongInt& t);
 
