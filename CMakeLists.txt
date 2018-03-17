@@ -9,6 +9,8 @@ set(SOURCE_FILES
         src/long_arithm.hpp
         src/random.h
         src/random.hpp
+        src/rsa_encryptor.h
+        src/rsa_encryptor.hpp
 )
 
 add_executable(RSAImpl ${SOURCE_FILES})

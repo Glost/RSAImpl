@@ -22,6 +22,8 @@ namespace RSAImpl {
 
     public:
 
+        LongInt() : LongInt(0) { }
+
         LongInt(long long longLong, bool needTrim = true);
 
         LongInt(const LongInt& other, bool needTrim = true);
