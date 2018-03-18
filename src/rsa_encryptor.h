@@ -7,6 +7,8 @@
 #ifndef RSAIMPL_RSA_ENCRYPTOR_H
 #define RSAIMPL_RSA_ENCRYPTOR_H
 
+#include <iostream>
+
 #include "long_arithm.h"
 #include "random.h"
 
@@ -21,13 +23,13 @@ namespace RSAImpl {
                 int testForPrimeAttemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT)
                 : _size(size), _seed(seed), _testForPrimeAttemptsCount(testForPrimeAttemptsCount) { init(); }
 
-        Byte* encrypt(const Byte* message) const;
+        void encrypt(std::istream& input, std::ostream& output) const;
 
-        Byte* decrypt(const Byte* message) const;
+        void decrypt(std::istream& input, std::ostream& output) const;
 
-        LongInt encrypt(LongInt message) const;
+        LongInt encrypt(const LongInt& message) const;
 
-        LongInt decrypt(LongInt message) const;
+        LongInt decrypt(const LongInt& message) const;
 
     private:
 

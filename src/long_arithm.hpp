@@ -20,7 +20,7 @@ namespace RSAImpl {
         for (int i = size; i > 0; --i)
         {
             data[i] = longLong % 2;
-            longLong /= 2;
+            longLong >>= 1;
         }
 
         if (data[1] == 0)
@@ -479,6 +479,28 @@ namespace RSAImpl {
         return charValue;
     }
 
+    Byte* LongInt::toBytes() const
+    {
+        int size = 0;
+        return toBytes(size);
+    }
+
+    Byte* LongInt::toBytes(int& size) const
+    {
+        int bytesCount = _size / 8 + (_size % 8 != 0 ? 1 : 0);
+        Byte* bytes = new Byte[bytesCount];
+
+        for (int i = size; i > 0; --i)
+        {
+            int bytesIndex = bytesCount - (_size - i) / 8 - 1;
+            bytes[bytesIndex] = (bytes[bytesIndex] << 1) + _data[i];
+        }
+
+        size = _size;
+
+        return bytes;
+    }
+
     void LongInt::operator=(const LongInt& other)
     {
         if (_data != nullptr)
@@ -519,6 +541,26 @@ namespace RSAImpl {
 
         return gcdRes;
     }
+
+    LongInt LongInt::fromBytes(const Byte* bytes, int size)
+    {
+        Byte* data = new Byte[size + 1];
+        int bytesCount = size / 8 + (size % 8 != 0 ? 1 : 0);
+        Byte* bytesCopy = new Byte[bytesCount];
+        copyBytes(bytesCopy, (Byte*) bytes, bytesCount);
+
+        for (int i = size; i > 0; --i)
+        {
+            int bytesIndex = bytesCount - (size - i) / 8 - 1;
+            data[i] = bytesCopy[bytesIndex] % 2;
+            bytesCopy[bytesIndex] >>= 1;
+        }
+        data[0] = 0;
+
+        return LongInt(data, size);
+    }
+
+
 
     LongInt LongInt::multiplyKaratsuba(const LongInt& a, const LongInt& b)
     {

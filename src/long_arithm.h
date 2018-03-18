@@ -84,6 +84,10 @@ namespace RSAImpl {
 
         char toChar() const;
 
+        Byte* toBytes() const;
+
+        Byte* toBytes(int& size) const;
+
     public:
 
         void operator=(const LongInt& other);
@@ -107,6 +111,8 @@ namespace RSAImpl {
         static LongInt gcd(const LongInt& a, const LongInt& b);
 
         static LongInt gcd(const LongInt& a, const LongInt& b, LongInt& s, LongInt& t);
+
+        static LongInt fromBytes(const Byte* bytes, int size);
 
         static LongInt zero() { return LongInt(0); }
 
