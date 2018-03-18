@@ -18,8 +18,8 @@ namespace RSAImpl {
 
     public:
 
-        RSAEncryptor(int size = 2 * DEFAULT_LONG_INT_SIZE,
-                int seed = DEFAULT_SEED,
+        RSAEncryptor(int seed = DEFAULT_SEED,
+                int size = 2 * DEFAULT_LONG_INT_SIZE,
                 int testForPrimeAttemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT)
                 : _size(size), _seed(seed), _testForPrimeAttemptsCount(testForPrimeAttemptsCount) { init(); }
 

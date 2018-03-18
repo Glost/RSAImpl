@@ -76,6 +76,8 @@ namespace RSAImpl {
 
         bool isProbablyPrime(int attemptsCount = TEST_FOR_PRIME_ATTEMPTS_COUNT) const;
 
+        LongInt trim() const;
+
         LongInt setSize(int size) const;
 
         LongInt getSubLongInt(int begin, int n) const;
@@ -87,6 +89,8 @@ namespace RSAImpl {
         Byte* toBytes() const;
 
         Byte* toBytes(int& size) const;
+
+        int getSize() const { return _size; }
 
     public:
 

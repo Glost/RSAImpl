@@ -229,25 +229,28 @@ namespace RSAImpl {
             return zero();
         }
 
-        int size = std::max(_size, other._size);
+        LongInt thisNorm = trim();
+        LongInt otherNorm = other.trim();
+
+        int size = std::max(thisNorm._size, otherNorm._size);
 
         Byte* data = new Byte[size + 1];
         setToZero(data, size + 1);
 
-        LongInt part = getSubLongInt(1, other._size);
+        LongInt part = getSubLongInt(1, otherNorm._size);
 
-        for (int i = other._size; i <= _size; ++i)
+        for (int i = otherNorm._size; i <= thisNorm._size; ++i)
         {
-            if (other > part)
+            if (otherNorm > part)
                 data[i] = 0;
             else
             {
                 data[i] = 1;
-                part = part - other;
+                part = part - otherNorm;
             }
 
-            if (i < _size)
-                part = (part << 1) + LongInt(_data[i + 1]);
+            if (i < thisNorm._size)
+                part = (part << 1) + LongInt(thisNorm._data[i + 1]);
         }
 
         remainder = LongInt(part);
@@ -425,6 +428,16 @@ namespace RSAImpl {
         return true;
     }
 
+    LongInt LongInt::trim() const
+    {
+        int trimmedSize = _size;
+        const Byte* trimmedData = trim(_data, trimmedSize);
+        if (trimmedData == _data)
+            return LongInt(*this);
+
+        return LongInt(trimmedData, trimmedSize);
+    }
+
     LongInt LongInt::setSize(int size) const
     {
         if (size == _size)
@@ -457,8 +470,8 @@ namespace RSAImpl {
     {
         long long longLongValue = 0;
 
-        for (int i = _size; i > 0; --i)
-            longLongValue = (_data[i] << (_size - i)) + longLongValue;
+        for (int i = _size; i > 0 && _size - i < 7 * sizeof(unsigned long long); --i)
+            longLongValue += ((unsigned long long) (_data[i])) << ((unsigned long long) (_size - i));
 
         if (_data[0] == 1)
             longLongValue *= -1;
@@ -489,11 +502,12 @@ namespace RSAImpl {
     {
         int bytesCount = _size / 8 + (_size % 8 != 0 ? 1 : 0);
         Byte* bytes = new Byte[bytesCount];
+        setToZero(bytes, bytesCount);
 
-        for (int i = size; i > 0; --i)
+        for (int i = _size; i > 0; --i)
         {
             int bytesIndex = bytesCount - (_size - i) / 8 - 1;
-            bytes[bytesIndex] = (bytes[bytesIndex] << 1) + _data[i];
+            bytes[bytesIndex] += _data[i] << ((_size - i) % 8);
         }
 
         size = _size;
@@ -559,8 +573,6 @@ namespace RSAImpl {
 
         return LongInt(data, size);
     }
-
-
 
     LongInt LongInt::multiplyKaratsuba(const LongInt& a, const LongInt& b)
     {
